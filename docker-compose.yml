@@ -98,4 +98,4 @@ services:
     volumes:
       - ./gui:/app
     ports:
-      - "7000:7000"
+      - "5173:5173"
