@@ -1,23 +1,41 @@
 version: '3'
 
+networks:
+  test:
+
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    hostname: zookeeper
     container_name: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - test
 
   kafka:
     image: wurstmeister/kafka
+    hostname: kafka
     container_name: kafka
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: "events:1:1"
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      delete.topic.enable: true
+
+
+    networks:
+      - test
 
   producer:
     build: ./producer
@@ -25,12 +43,14 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BROKERS: kafka:29092
+      KAFKA_BROKERS: kafka:9092
     volumes:
       - ./producer:/app
     command: npm start
     ports:
       - "7001:7001"
+    networks:
+      - test
 
   consumer1:
     build: ./consumer
@@ -38,12 +58,14 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BROKERS: kafka:29092
+      KAFKA_BROKERS: kafka:9092
     volumes:
       - ./consumer:/app
     command: npm start
     ports:
       - "7002:7002"
+    networks:
+      - test
 
   consumer2:
     build: ./consumer2
@@ -51,12 +73,14 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BROKERS: kafka:29092
+      KAFKA_BROKERS: kafka:9092
     volumes:
       - ./consumer2:/app
     command: npm start
     ports:
       - "7003:7003"
+    networks:
+      - test
 
   logstash:
     image: docker.elastic.co/logstash/logstash:7.16.2
@@ -65,11 +89,14 @@ services:
       - "5000:5000"
       - "9600:9600"
     volumes:
-      - ./logstash:/usr/share/logstash/pipeline
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
+      xpack.monitoring.enabled: true
+    networks:
+      - test
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
@@ -79,6 +106,9 @@ services:
       - "9300:9300"
     environment:
       discovery.type: single-node
+      xpack.security.enabled: false
+    networks:
+      - test
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.16.2
@@ -87,6 +117,8 @@ services:
       - elasticsearch
     ports:
       - "5601:5601"
+    networks:
+      - test
 
   gui:
     build: ./gui
@@ -94,8 +126,10 @@ services:
     depends_on:
       - kafka
     environment:
-      KAFKA_BROKERS: kafka:29092
+      KAFKA_BROKERS: kafka:9092
     volumes:
       - ./gui:/app
     ports:
       - "5173:5173"
+    networks:
+      - test
