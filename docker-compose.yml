@@ -30,7 +30,7 @@ services:
       - ./producer:/app
     command: npm start
     ports:
-    - "7001:7001"
+      - "7001:7001"
 
   consumer1:
     build: ./consumer
@@ -41,18 +41,22 @@ services:
       KAFKA_BROKERS: kafka:29092
     volumes:
       - ./consumer:/app
-    command: npm start consumer1
+    command: npm start
+    ports:
+      - "7002:7002"
 
   consumer2:
-    build: ./consumer
+    build: ./consumer2
     container_name: consumer2
     depends_on:
       - kafka
     environment:
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./consumer:/app
-    command: npm start consumer2
+      - ./consumer2:/app
+    command: npm start
+    ports:
+      - "7003:7003"
 
   logstash:
     image: docker.elastic.co/logstash/logstash:7.16.2
