@@ -29,6 +29,8 @@ services:
     volumes:
       - ./producer:/app
     command: npm start
+    ports:
+    - "7001:7001"
 
   consumer1:
     build: ./consumer
@@ -92,4 +94,4 @@ services:
     volumes:
       - ./gui:/app
     ports:
-      - "3000:3000"
+      - "7000:7000"
