@@ -63,7 +63,7 @@ app.post('/topics/:topic', async (req, res) => {
   res.send(`Published message: ${message}`);
 });
 
-const port = 3000;
+const port = 7001;
 app.listen(port, () => {
   console.log(`Producer server listening at http://localhost:${port}`);
 });
