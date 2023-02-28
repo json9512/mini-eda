@@ -1,135 +1,29 @@
-version: '3'
-
-networks:
-  test:
+version: "3.8"
+name: mini-eda
 
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper
-    hostname: zookeeper
-    container_name: zookeeper
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+    image: localstack/localstack
     ports:
-      - "2181:2181"
-    networks:
-      - test
-
-  kafka:
-    image: wurstmeister/kafka
-    hostname: kafka
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka
-      KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "events:1:1"
-      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9094
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      delete.topic.enable: true
-
-
-    networks:
-      - test
-
-  producer:
-    build: ./producer
-    container_name: producer
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BROKERS: kafka:9092
+      - DEBUG=${DEBUG-}
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - ./producer:/app
-    command: npm start
-    ports:
-      - "7001:7001"
-    networks:
-      - test
-
-  consumer1:
-    build: ./consumer
-    container_name: consumer1
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  
+  setup:
+    container_name: mini-eda
+    build: ./setup
     depends_on:
-      - kafka
+      - localstack
     environment:
-      KAFKA_BROKERS: kafka:9092
-    volumes:
-      - ./consumer:/app
-    command: npm start
-    ports:
-      - "7002:7002"
-    networks:
-      - test
-
-  consumer2:
-    build: ./consumer2
-    container_name: consumer2
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BROKERS: kafka:9092
-    volumes:
-      - ./consumer2:/app
-    command: npm start
-    ports:
-      - "7003:7003"
-    networks:
-      - test
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.16.2
-    container_name: logstash
-    ports:
-      - "5000:5000"
-      - "9600:9600"
-    volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTICSEARCH_HOST: elasticsearch
-      ELASTICSEARCH_PORT: 9200
-      xpack.monitoring.enabled: true
-    networks:
-      - test
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
-    container_name: elasticsearch
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: false
-    networks:
-      - test
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.16.2
-    container_name: kibana
-    depends_on:
-      - elasticsearch
-    ports:
-      - "5601:5601"
-    networks:
-      - test
-
-  gui:
-    build: ./gui
-    container_name: gui
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BROKERS: kafka:9092
-    volumes:
-      - ./gui:/app
-    ports:
-      - "5173:5173"
-    networks:
-      - test
+      - LOCALSTACK_HOST=localstack
+      - LOCALSTACK_PORT=4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=ap-southeast-2
