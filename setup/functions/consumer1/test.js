@@ -1,1 +1,3 @@
-export const test = console.log("testing!!!")
+ module.exports = {
+  test: () => console.log("testing!!")
+ }

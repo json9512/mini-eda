@@ -51,6 +51,9 @@ def has_js_file_in_files(files):
       return True
   return False
 
+# def create_log_destination_string(function_name):
+#   return "arn:aws:logs:"+config['AWS_DEFAULT_REGION']+":000000000000:log-group:/aws/lambda/"+function_name
+
 # create directory map with its files
 directory_map = {}
 for root, dirs, files in os.walk("functions"):
@@ -61,19 +64,22 @@ for root, dirs, files in os.walk("functions"):
 # create zip file for lambda functions by iterating directory map and zipping directory content
 for directory, files in directory_map.items():
   function_name = directory.split("/")[-1]
-  subprocess.run(["zip", "-r", f"{directory}.zip", f"./{directory}"])
-  subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-function", "--function-name", function_name, "--runtime", "nodejs18.x", "--role", "arn:aws:iam::000000000000:role/lambda-role", "--handler", f"{function_name}.handler", "--zip-file", f"fileb://functions/{function_name}.zip"])
+  os.chdir(directory)
+  subprocess.run(["zip", "-r", f"../../{function_name}.zip", f"."])
+  os.chdir("../..")
+  subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-function", "--function-name", function_name, "--runtime", "nodejs18.x", "--role", "arn:aws:iam::000000000000:role/lambda-role", "--handler", "index.handler", "--zip-file", f"fileb://{function_name}.zip"])
 
-# create log group for lambda functions
-for directory, files in directory_map.items():
-  function_name = directory.split("/")[-1]
-  subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "logs", "create-log-group", "--log-group-name", f"/aws/lambda/{function_name}"])
 
-# link log group to lambda functions
-for directory, files in directory_map.items():
-  function_name = directory.split("/")[-1]
-  subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "update-function-configuration", "--function-name", function_name, "--log-group-name", f"/aws/lambda/{function_name}"])
+# # create log group for lambda functions
+# for directory, files in directory_map.items():
+#   function_name = directory.split("/")[-1]
+#   subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "logs", "create-log-group", "--log-group-name", f"/aws/lambda/{function_name}"])
+
+# # link log group to lambda functions
+# for directory, files in directory_map.items():
+#   function_name = directory.split("/")[-1]
+#   subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "put-function-event-invoke-config", "--function-name", function_name, "--destination-config", '{"OnSuccess": {"Destination":"'+ create_log_destination_string(function_name)+'"}, "OnFailure": {"Destination":"'+ create_log_destination_string(function_name)+'"}}'])
 
 # link lambda functions to sqs queues by creating event source mapping
-subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-event-source-mapping", "--function-name", "sample-consumer1", "--event-source-arn", "arn:aws:sqs:ap-southeast-2:000000000000:sample-consumer1-queue", "--batch-size", "1"])
-subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-event-source-mapping", "--function-name", "sample-consumer2", "--event-source-arn", "arn:aws:sqs:ap-southeast-2:000000000000:sample-consumer2-queue", "--batch-size", "1"])
+subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-event-source-mapping", "--function-name", "consumer1", "--event-source-arn", "arn:aws:sqs:ap-southeast-2:000000000000:sample-consumer1-queue", "--batch-size", "1"])
+subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "lambda", "create-event-source-mapping", "--function-name", "consumer2", "--event-source-arn", "arn:aws:sqs:ap-southeast-2:000000000000:sample-consumer2-queue", "--batch-size", "1"])

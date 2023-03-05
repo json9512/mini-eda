@@ -7,7 +7,7 @@ RUN adduser --disabled-password --gecos "" user  \
     && echo 'user ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
-RUN sudo ./aws/install
+RUN sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
 
 WORKDIR /app
 
