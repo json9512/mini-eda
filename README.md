@@ -59,7 +59,7 @@
   - (Dockerfile에서 걍 RUN 하면 되는거 아닌가 싶나요? 왜 이렇게 했는지 묻지마요 ㅎ ~~하다보니 이렇게 됐어요~~)
 - 인프라가 정상적으로 올라가면:
   - localstack에서 정의한 SNS, SQS, Lambda를 사용함
-  - producer는 localstack/SNS로 토픽을 publish 할 수 있음 (구현 예정)
+  - producer는 localstack/SNS로 토픽을 publish 할 수 있음
   - localstack/SNS는 해당 사항을 localstack/SQS로 전파
   - localstack/SQS는 메세지가 들어오면 연결된 Lambda를 실행 (lambda 도커 이미지가 없다면 cold start임)
 
@@ -72,10 +72,34 @@
 - 터미널 로그에서 해당 메세지 로그가 떠야함
   - consumer 코드를 보면 해당 event를 `console.log` 하도록 해놨음
 
+# Producer 활용한 테스트
 
+- producer 주소는 POST http://localhost:7821/sns/publish
+- POSTMAN 사용해서 테스트 해주세요
+- POST 요청을 보내면, consumer 쪽 로직까지 잘 전달되어야 합니다. (기본 로직은 log 찍는 것)
+- sample JSON
+```json
+{
+  "message": {
+    "test": "testing 123"
+  },
+  "messageAttributes": {
+    "test": {
+      "DataType": "String",
+      "StringValue": "testing message attributes"
+    }
+  },
+  "topicArn": "arn:aws:sns:ap-southeast-2:000000000000:sample-sns"
+}
+```
 ---
+# TODO
+- 현재 우리 서비스의 sqs, sns 세팅을 확인해보고 사용하기
+- NOTE: sns 기능중에 MessageAttributes로만 필터하고 있는데, 설정을 바꾸면 message body 사용 가능함. 하지만, 민수가 말씀하신 message 파싱 후인지 전인지는 잘 모르겠음.
+
 
 ### 프로젝트 셋업 테스트 Log
 
 - 03.07: window + macos에서 정상적으로 동작하는 것 확인
 - 03.12: producer 기본 설정 끝남. SNS 기능만 추가하면 됨
+- 03.12: producer SNS 기능 추가
