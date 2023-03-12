@@ -42,6 +42,11 @@ services:
       - localstack
     environment:
       - PORT=7821
+      - LOCALSTACK_HOST=localstack
+      - LOCALSTACK_PORT=4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=ap-southeast-2
     ports:
       - "7821:7821"
     volumes:

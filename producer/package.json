@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/koa": "^2.13.5",
+    "@types/koa-bodyparser": "^4.3.10",
     "@types/koa-logger": "^3.1.2",
     "@types/koa-router": "^7.4.4",
     "@types/node": "^18.15.0",
@@ -22,7 +23,9 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.289.0",
     "koa": "^2.14.1",
+    "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^12.0.0"
   }
