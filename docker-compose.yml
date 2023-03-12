@@ -33,3 +33,17 @@ services:
       - AWS_DEFAULT_REGION=ap-southeast-2
       - DOCKER_CLIENT_TIMEOUT=120
       - COMPOSE_HTTP_TIMEOUT=120
+
+  
+  producer:
+    container_name: producer
+    build: ./producer
+    depends_on:
+      - localstack
+    environment:
+      - PORT=7821
+    ports:
+      - "7821:7821"
+    volumes:
+      - ./producer/src:/app/src
+      - /app/node_modules

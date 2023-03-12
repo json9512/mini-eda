@@ -1,3 +1,3 @@
 export const getHome = (ctx, next) => {
-  ctx.body = "Hi";
+  ctx.body = "Hi test";
 };
