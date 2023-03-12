@@ -1,7 +1,7 @@
 # mini-eda
 
 - [localstack](https://localstack.cloud/)이라는 간단한 툴을 사용해서 producer-channel-consumer를 구현함
-- producer: node koa server로 sns에 publish 할 수 있도록 구현 (아직 작업 중)
+- producer: node koa server로 sns에 publish 할 수 있도록 구현
 - channel: 현재 우리가 사용하고 있는 SNS - SQS 구조를 가지고 있음
 - consumer: js로 작성된 lambda 워커 (commonjs 형식)
 
@@ -44,7 +44,11 @@
   - ctrl+c 하면 실행 종료. 실행 종료하면 항상 `docker-compose down`을 같이 해주셔야함
 - 만약 코드 수정 사항이 생기면 docker desktop에서 해당 image와 container를 삭제해주고 `docker-compose up` 해주시면 깔끔하게 변경사항 반영됨
   - 주로 `localstack/localstack` 이미지는 건드릴 필요는 없고 `public.ecr.aws/lambda/nodejs:18` (람다) 이미지와 `mini-eda`를 삭제해줘야함
-- hot reload 같은 엘레강트한 기능따위 없으니 `docker-compose up/down` 과 친해져야함
+- ~~hot reload 같은 엘레강트한 기능따위 없으니 `docker-compose up/down` 과 친해져야함~~
+  - 하다보니 ~~빡쳐서~~ 너무 접근성이 안좋아서 hot reload 구현함
+  - 다만, producer만 가능하고 (코드 수정하면 바로 반영됨)
+  - consumer의 경우는 zip 해서 올리는 형태기 때문에 `docker-compose up/down` 해주셔야함
+  - SNS, SQS 설정을 바꾸는거라면 (ex. setup.py 쪽 스크립트) 이것도 `docker-compose up/down` 해주셔야함
 - `volume/logs/localstack_infra.err`를 참고하면 로그가 다 기록되고 있음
 
 # 간단 설명
@@ -68,12 +72,10 @@
 - 터미널 로그에서 해당 메세지 로그가 떠야함
   - consumer 코드를 보면 해당 event를 `console.log` 하도록 해놨음
 
-# TODO
-
-- producer 만들어서 SNS에 publish 할 수 있는 기능 추가
 
 ---
 
 ### 프로젝트 셋업 테스트 Log
 
 - 03.07: window + macos에서 정상적으로 동작하는 것 확인
+- 03.12: producer 기본 설정 끝남. SNS 기능만 추가하면 됨
