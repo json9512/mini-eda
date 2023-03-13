@@ -34,10 +34,10 @@ subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{c
 subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "sns", "create-topic", "--name", "sample-sns"])
 
 # Subscribe sample-consumer1-queue to sample-sns topic
-subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "sns", "subscribe", "--topic-arn", "arn:aws:sns:ap-southeast-2:000000000000:sample-sns", "--protocol", "sqs", "--notification-endpoint", f"arn:aws:sqs:{config['AWS_DEFAULT_REGION']}:000000000000:sample-consumer1-queue"])
+subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "sns", "subscribe", "--topic-arn", "arn:aws:sns:ap-southeast-2:000000000000:sample-sns", "--attributes", '{ "RawMessageDelivery": "True" }', "--protocol", "sqs", "--notification-endpoint", f"arn:aws:sqs:{config['AWS_DEFAULT_REGION']}:000000000000:sample-consumer1-queue"])
 
 # Subscribe sample-consumer2-queue to sample-sns topic
-subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "sns", "subscribe", "--topic-arn", "arn:aws:sns:ap-southeast-2:000000000000:sample-sns", "--protocol", "sqs", "--notification-endpoint", f"arn:aws:sqs:{config['AWS_DEFAULT_REGION']}:000000000000:sample-consumer2-queue"])
+subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "sns", "subscribe", "--topic-arn", "arn:aws:sns:ap-southeast-2:000000000000:sample-sns", "--attributes", '{ "RawMessageDelivery": "True" }' , "--protocol", "sqs", "--notification-endpoint", f"arn:aws:sqs:{config['AWS_DEFAULT_REGION']}:000000000000:sample-consumer2-queue"])
 
 # create iam role for lambda
 subprocess.run(["aws", "--endpoint-url", f"http://{config['LOCALSTACK_HOST']}:{config['LOCALSTACK_PORT']}/", "iam", "create-role", "--role-name", "lambda-role", "--assume-role-policy-document", '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Resource": "arn:aws:logs:*:*:*", "Action": ["sts:AssumeRole", "logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]}]}'])
