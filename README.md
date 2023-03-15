@@ -78,6 +78,7 @@
 - POSTMAN 사용해서 테스트 해주세요
 - POST 요청을 보내면, consumer 쪽 로직까지 잘 전달되어야 합니다. (기본 로직은 log 찍는 것)
 - sample JSON
+
 ```json
 {
   "message": {
@@ -92,11 +93,19 @@
   "topicArn": "arn:aws:sns:ap-southeast-2:000000000000:sample-sns"
 }
 ```
+
 ---
+
+# 팁
+
+- AWS 관련 설정을 바꾸고 테스트 해야할 가능성이 높은데, 이건 대부분 aws cli를 통해서 하고 있음 (setup.py 스크립트)
+  - ex) Filter policy 설정, batch size 설정 등
+- [공식 가이드](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html) 참고하시면 됩니다
+
 # TODO
+
 - 현재 우리 서비스의 sqs, sns 세팅을 확인해보고 사용하기
 - NOTE: sns 기능중에 MessageAttributes로만 필터하고 있는데, 설정을 바꾸면 message body 사용 가능함. 하지만, 민수가 말씀하신 message 파싱 후인지 전인지는 잘 모르겠음.
-
 
 ### 프로젝트 셋업 테스트 Log
 
